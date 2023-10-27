@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 import os
+import signal
 import sys
 import time
+import traceback
 
 sys.path.append('gen-py')
 
@@ -13,7 +15,13 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
 
+def signal_handler(signum, frame):
+    print("Receive sig %s" % (signum,))
+
+
 def main():
+    signal.signal(signal.SIGUSR1, signal_handler)
+
     print("Start client @ %s" % (os.getpid()))
     # Make socket
     transport = TSocket.TSocket('localhost', 9090)
@@ -41,4 +49,5 @@ if __name__ == '__main__':
     try:
         main()
     except Thrift.TException as tx:
-        print('%s' % tx.message)
+        print(tx, tx.inner)
+        traceback.print_exc()
